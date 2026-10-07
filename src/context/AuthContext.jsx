@@ -36,6 +36,9 @@ export const AuthProvider = ({ children }) => {
   const login = async (email, password) => {
     const res = await api.post('/auth/login', { email, password });
     if (res.data.success) {
+      if (res.data.token) {
+        localStorage.setItem('token', res.data.token);
+      }
       setUser(res.data.data);
       setIsAuthenticated(true);
     }
@@ -43,7 +46,12 @@ export const AuthProvider = ({ children }) => {
   };
 
   const logout = async () => {
-    await api.post('/auth/logout');
+    try {
+      await api.post('/auth/logout');
+    } catch (e) {
+      // ignore logout network errors
+    }
+    localStorage.removeItem('token');
     setUser(null);
     setIsAuthenticated(false);
   };
